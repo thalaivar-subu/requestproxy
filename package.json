@@ -9,6 +9,7 @@
     "build": "npm run clean && npm run build-server",
     "build-test": "./node_modules/@babel/cli/bin/babel.js -d ./build ./app -s && npm run clean && npm run build-server",
     "start": "npm run build && node ./build/index.js",
+    "start-dev": "nodemon --exec ./node_modules/@babel/node/bin/babel-node.js  app/index.js",
     "test": "start-server-and-test 'npm run build &&  NODE_ENV=test node ./build/index.js' 8081 'jest --coverage  --verbose'",
     "lint": "npx eslint . --ext .js",
     "lint-fix": "npx eslint . --ext .js --fix",
@@ -27,9 +28,9 @@
   "devDependencies": {
     "@babel/cli": "7.12.10",
     "@babel/core": "7.12.7",
+    "@babel/node": "7.12.10",
     "@babel/plugin-transform-runtime": "7.12.1",
     "@babel/preset-env": "7.12.7",
-    "@babel/register": "7.12.10",
     "babel-eslint": "10.1.0",
     "babel-plugin-module-resolver": "4.0.0",
     "eslint": "7.14.0",
@@ -40,10 +41,13 @@
   },
   "dependencies": {
     "axios": "0.21.0",
+    "bluebird": "3.7.2",
     "express": "4.17.1",
     "express-http-context": "1.2.4",
+    "express-validator": "6.9.2",
     "fast-safe-stringify": "2.0.7",
     "morgan": "1.10.0",
+    "redis": "3.0.2",
     "uniqid": "5.2.0",
     "winston": "3.3.3"
   }

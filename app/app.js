@@ -4,6 +4,7 @@ import express from "express";
 import logger from "./utils/logger";
 import Middlewares from "./middlewares/index";
 import Routes from "./routes/index";
+import { InitRedis } from "./utils/redis";
 
 import { APP_NAME, PORT } from "./lib/constants";
 
@@ -13,7 +14,11 @@ Middlewares(app);
 
 Routes(app);
 
-// App Listens
-app.listen(PORT, () => {
-  logger.info(`${APP_NAME} app listening at http://localhost:${PORT}`);
-});
+const StartServer = async () => {
+  await InitRedis();
+  app.listen(PORT, () => {
+    logger.info(`${APP_NAME} app listening at http://localhost:${PORT}`);
+  });
+};
+
+StartServer();
