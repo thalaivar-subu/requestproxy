@@ -3,14 +3,15 @@ import logEventErrors from "./utils/eventerrors";
 import express from "express";
 import logger from "./utils/logger";
 import Middlewares from "./middlewares/index";
+import Routes from "./routes/index";
+
 import { APP_NAME, PORT } from "./lib/constants";
 
 const app = express();
 
 Middlewares(app);
 
-// Healtcheck End point
-app.get("/", (req, res) => res.status(200).send({ message: "I am Alive" }));
+Routes(app);
 
 // App Listens
 app.listen(PORT, () => {

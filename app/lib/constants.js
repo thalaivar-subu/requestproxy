@@ -1,4 +1,4 @@
-export const APP_NAME = process.env.APP_NAME || "node-boilerplate";
+export const APP_NAME = process.env.APP_NAME || "requestproxy";
 export const NODE_ENV = process.env.NODE_ENV || "development";
 export const LOGPATH = process.env.LOGPATH || "logs";
 export const LOG_FILE_NAME = `${LOGPATH}/${
