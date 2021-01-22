@@ -8,7 +8,7 @@
     "build-server": "./node_modules/@babel/cli/bin/babel.js -d ./build ./app -s",
     "build": "npm run clean && npm run build-server",
     "build-test": "./node_modules/@babel/cli/bin/babel.js -d ./build ./app -s && npm run clean && npm run build-server",
-    "start": "npm run build && node ./build/index.js",
+    "start": "node ./build/index.js",
     "start-dev": "nodemon --exec ./node_modules/@babel/node/bin/babel-node.js  app/index.js",
     "test": "start-server-and-test 'npm run build &&  NODE_ENV=test node ./build/index.js' 8081 'jest --coverage  --verbose'",
     "lint": "npx eslint . --ext .js",
