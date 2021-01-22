@@ -2,13 +2,13 @@ import logger from "./logger";
 import redis from "redis";
 import bluebird from "bluebird";
 import { REDIS_CONFIG } from "../lib/constants";
-import { isValidArray } from "./helpers";
 
 // Promisifying Redis with Bluebird
 bluebird.promisifyAll(redis);
 
 let RedisClient;
 
+// Initialize Redis on Application Startup
 const InitRedis = () => {
   const { host, port, db } = REDIS_CONFIG;
   RedisClient = redis.createClient(port, host, {
@@ -26,6 +26,7 @@ const InitRedis = () => {
   });
 };
 
+// Pass Keys - returns value from redis if exists
 const GetValueFromRedis = async (key) => {
   let result;
   try {
@@ -36,6 +37,7 @@ const GetValueFromRedis = async (key) => {
   return result;
 };
 
+// Pass key and value - sets in Redis
 const SetValueToRedis = async (key, data, expiration) => {
   let result;
   try {

@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import logger from "./logger";
 
+
+// Logs Information on Application Crashed Exit
 export default process
   .on("unhandledRejection", (reason, promise) => {
     const memoryUsage = process.memoryUsage();

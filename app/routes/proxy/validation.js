@@ -8,7 +8,11 @@ import {
 } from "../../lib/constants";
 import { check, body } from "express-validator";
 
-const clientIdCustomValidation = async (clientId) => {
+/* 
+User can consume this API 50 times in a Minute
+this method validates this case
+*/
+const clientIdRateLimitValidation = async (clientId) => {
   const redisResponse = await GetValueFromRedis(clientId);
   if (!redisResponse) {
     const setResponse = await SetValueToRedis(
@@ -62,6 +66,7 @@ const clientIdCustomValidation = async (clientId) => {
   }
 };
 
+// Input Validation /proxy API
 const ProxyValidation = [
   check("clientId").isNumeric().withMessage("Must Be a Valid Number"),
   check("url")
@@ -73,7 +78,7 @@ const ProxyValidation = [
     .optional()
     .isString()
     .withMessage("Must Be a Valid String"),
-  body("clientId").custom(clientIdCustomValidation),
+  body("clientId").custom(clientIdRateLimitValidation),
 ];
 
 export default ProxyValidation;
