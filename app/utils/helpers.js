@@ -1,4 +1,6 @@
 import safeStringify from "fast-safe-stringify";
+import logger from "./logger";
+import axios from "axios";
 
 // Parses JSON -> in case of error returns empty object
 export const parseJson = (v) => {
@@ -36,3 +38,29 @@ export const deepFreeze = (object) => {
 
 // Object.clone -> clones shallow level -> So deepCloning for nested Levels
 export const deepClone = (v) => parseJson(safeStringify(v));
+
+export const axiosWrapper = async (params) => {
+  let response;
+  try {
+    const { method } = params;
+    console.log({ method });
+    switch (method) {
+      case "GET":
+        params = deleteKeysInObject(["url", "method"], params);
+        break;
+    }
+    response = await axios(params);
+  } catch (error) {
+    logger.error(`Error in axiosWrapper -> ${safeStringify(params)}`, error);
+    response = error.response;
+  }
+  return response;
+};
+
+export const deleteKeysInObject = (keys, tempObj) => {
+  const obj = deepClone(tempObj);
+  for (let key in obj) {
+    if (!keys.includes(key)) obj[key] = undefined;
+  }
+  return deepClone(obj);
+};
