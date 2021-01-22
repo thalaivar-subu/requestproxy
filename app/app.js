@@ -5,20 +5,28 @@ import logger from "./utils/logger";
 import Middlewares from "./middlewares/index";
 import Routes from "./routes/index";
 import { InitRedis } from "./utils/redis";
-
 import { APP_NAME, PORT } from "./lib/constants";
 
-const app = express();
+class App {
+  #app = null;
+  constructor(params) {
+    Object.keys(params).map((x) => (this[x] = params[x]));
+  }
+  async initApp() {
+    this.app = express();
+    Middlewares(this.app);
+    Routes(this.app);
+    await InitRedis();
+    this.app.listen(PORT, () => {
+      logger.info(
+        `${this.APP_NAME} app listening at http://localhost:${this.PORT}`
+      );
+    });
+  }
+  async getApp() {
+    await this.initApp();
+    return this.app;
+  }
+}
 
-Middlewares(app);
-
-Routes(app);
-
-const StartServer = async () => {
-  await InitRedis();
-  app.listen(PORT, () => {
-    logger.info(`${APP_NAME} app listening at http://localhost:${PORT}`);
-  });
-};
-
-StartServer();
+new App({ APP_NAME, PORT }).getApp();

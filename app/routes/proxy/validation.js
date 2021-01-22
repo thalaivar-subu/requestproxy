@@ -6,6 +6,7 @@ import {
   MAX_WINDOW_IN_MS,
   MAX_WINDOW_REQUEST_COUNT,
 } from "../../lib/constants";
+import { check, body } from "express-validator";
 
 const clientIdCustomValidation = async (clientId) => {
   const redisResponse = await GetValueFromRedis(clientId);
@@ -61,4 +62,18 @@ const clientIdCustomValidation = async (clientId) => {
   }
 };
 
-export { clientIdCustomValidation };
+const ProxyValidation = [
+  check("clientId").isNumeric().withMessage("Must Be a Valid Number"),
+  check("url")
+    .isURL({ protocols: ["https"] })
+    .withMessage("Must Be a Valid Https Url"),
+  check("headers").optional().isJSON().withMessage("Must Be a valid JSON"),
+  check("requestType").isString().withMessage("Must Be a Valid String"),
+  check("requestBody")
+    .optional()
+    .isString()
+    .withMessage("Must Be a Valid String"),
+  body("clientId").custom(clientIdCustomValidation),
+];
+
+export default ProxyValidation;

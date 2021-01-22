@@ -12,6 +12,7 @@
       {
         "root": "./"
       }
-    ]
+    ],
+    ["@babel/plugin-proposal-class-properties"]
   ]
 }

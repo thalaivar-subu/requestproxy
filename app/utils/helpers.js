@@ -39,10 +39,11 @@ export const deepFreeze = (object) => {
 // Object.clone -> clones shallow level -> So deepCloning for nested Levels
 export const deepClone = (v) => parseJson(safeStringify(v));
 
+// Generically Handles GET,POST, DELETE, PUT Methods and returns Response
 export const axiosWrapper = async ({ params, timeout }) => {
   let response;
   try {
-    if (params.method === "GET")
+    if (["GET", "DELETE"].includes(params.method))
       params = deleteKeysInObjectExcept(["url", "method"], params);
     else {
       params = deleteKeysInObjectExcept(
@@ -59,6 +60,7 @@ export const axiosWrapper = async ({ params, timeout }) => {
   return response;
 };
 
+// Removes keys from objects which are passed in arguments
 export const deleteKeysInObjectExcept = (keys, tempObj) => {
   const obj = deepClone(tempObj);
   for (let key in obj) {

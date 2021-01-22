@@ -1,32 +1,24 @@
-import { clientIdCustomValidation } from "./validation";
-import { check, validationResult, body } from "express-validator";
+import ProxyValidation from "./validation";
+import { validationResult } from "express-validator";
 import safeStringify from "fast-safe-stringify";
 import { parseJson, axiosWrapper } from "../../utils/helpers";
 import logger from "../../utils/logger";
 
 const Proxy = async (app) => {
-  app.use(
-    "/proxy",
-    [
-      check("clientId").isNumeric().withMessage("Must Be a Valid Number"),
-      check("url")
-        .isURL({ protocols: ["https"] })
-        .withMessage("Must Be a Valid Https Url"),
-      check("headers").optional().isJSON().withMessage("Must Be a valid JSON"),
-      check("requestType").isString().withMessage("Must Be a Valid String"),
-      check("requestBody")
-        .optional()
-        .isString()
-        .withMessage("Must Be a Valid String"),
-      body("clientId").custom(clientIdCustomValidation),
-    ],
-    async (req, res) => {
+  app.use("/proxy", ProxyValidation, async (req, res) => {
+    try {
+      // Request Validation
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        logger.error("Validation Error -> ", { errors });
+        logger.error("Validation Error -> ", { errors: errors.array() });
         return res.status(422).json({ errors: errors.array() });
       }
+
+      // On Validation Success moving on to Proxy
+
       const { url, requestType: method, requestBody: data, headers } = req.body;
+
+      // Setting Proxy Params
       const params = parseJson(
         safeStringify({
           url,
@@ -35,13 +27,28 @@ const Proxy = async (app) => {
           headers: parseJson(headers),
         })
       );
+
+      // Calling Input Endpoints
       const proxyResponse = await axiosWrapper({ params, timeout: 5000 });
-      const contentType = proxyResponse.headers["content-type"];
+      logger.info({ responseData: proxyResponse.data });
+
+      // Returning the Response
       res.status(proxyResponse.status);
-      res.contentType(contentType);
-      res.send(proxyResponse.data);
+      if (proxyResponse.headers && proxyResponse.headers["content-type"]) {
+        res.contentType(proxyResponse.headers["content-type"]);
+      }
+      return res.send(proxyResponse.data);
+    } catch (error) {
+      logger.error(
+        `Error in Proxy Endpoint -> ${safeStringify(req.body)}`,
+        error
+      );
+      // Error Response
+      res.status(500);
+      res.contentType("application/json");
+      return res.send({ msg: "Something Went Wrong" });
     }
-  );
+  });
 };
 
 export default Proxy;
