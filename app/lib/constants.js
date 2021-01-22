@@ -20,5 +20,5 @@ export const REDIS_CONFIG = {
   db: process.env.REDIS_DB || "0",
 };
 const MS_PER_MINUTE = 1000;
-export const MAX_WINDOW_REQUEST_COUNT = 3;
+export const MAX_WINDOW_REQUEST_COUNT = 50;
 export const MAX_WINDOW_IN_MS = 60 * MS_PER_MINUTE;

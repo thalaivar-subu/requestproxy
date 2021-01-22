@@ -39,17 +39,19 @@ export const deepFreeze = (object) => {
 // Object.clone -> clones shallow level -> So deepCloning for nested Levels
 export const deepClone = (v) => parseJson(safeStringify(v));
 
-export const axiosWrapper = async (params) => {
+export const axiosWrapper = async ({ params, timeout }) => {
   let response;
   try {
-    const { method } = params;
-    console.log({ method });
-    switch (method) {
-      case "GET":
-        params = deleteKeysInObject(["url", "method"], params);
-        break;
+    if (params.method === "GET")
+      params = deleteKeysInObjectExcept(["url", "method"], params);
+    else {
+      params = deleteKeysInObjectExcept(
+        ["url", "method", "data", "headers"],
+        params
+      );
     }
-    response = await axios(params);
+    logger.info({ params });
+    response = await axios({ ...params, timeout });
   } catch (error) {
     logger.error(`Error in axiosWrapper -> ${safeStringify(params)}`, error);
     response = error.response;
@@ -57,7 +59,7 @@ export const axiosWrapper = async (params) => {
   return response;
 };
 
-export const deleteKeysInObject = (keys, tempObj) => {
+export const deleteKeysInObjectExcept = (keys, tempObj) => {
   const obj = deepClone(tempObj);
   for (let key in obj) {
     if (!keys.includes(key)) obj[key] = undefined;
