@@ -1,6 +1,5 @@
 import { TEST_URL } from "../app/lib/constants";
 import { post } from "axios";
-import safeStringify from "fast-safe-stringify";
 
 describe("Proxy Test Cases", () => {
   it("Get Method Test Case", async (done) => {
@@ -22,33 +21,32 @@ describe("Proxy Test Cases", () => {
       console.error(error.response);
     }
   });
-  it("Post Method Test Case", async (done) => {
+  it("RateLimiting Test Case", async (done) => {
     try {
-      const response = await post(
-        `${TEST_URL}/proxy`,
-        {
-          clientId: 1,
-          requestType: "POST",
-          url: "https://rickandmortyapi.com/graphql/",
-          requestBody: safeStringify({
-            query: `{
-            characters(page: 1) {
-              results {
-                status
-              }
+      const requestPromises = [];
+      let noOfRequests = 10;
+      while (noOfRequests--) {
+        requestPromises.push(
+          post(
+            `${TEST_URL}/proxy`,
+            {
+              clientId: 1,
+              requestType: "GET",
+              url: "https://www.google.com",
+            },
+            {
+              headers: { "Content-Type": "application/json" },
             }
-          }`,
-          }),
-          headers: safeStringify({ "Content-Type": "application/json" }),
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      expect(response.status).toBe(200);
+          )
+        );
+      }
+      const responses = await Promise.allSettled(requestPromises);
+      responses.map(({ value: { status } = {} }) => {
+        expect([200, 500].includes(status)).toBe(true);
+      });
       done();
     } catch (error) {
-      console.error(error.response);
+      console.error(error);
     }
   });
 });

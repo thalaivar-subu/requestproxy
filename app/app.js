@@ -5,7 +5,7 @@ import logger from "./utils/logger";
 import Middlewares from "./middlewares/index";
 import Routes from "./routes/index";
 import { InitRedis } from "./utils/redis";
-import { APP_NAME, PORT } from "./lib/constants";
+import { APP_HOST_NAME, APP_NAME, PORT } from "./lib/constants";
 
 class App {
   #app = null;
@@ -19,7 +19,7 @@ class App {
     await InitRedis();
     this.app.listen(PORT, () => {
       logger.info(
-        `${this.APP_NAME} app listening at http://localhost:${this.PORT}`
+        `${this.APP_NAME} app listening at ${this.APP_HOST_NAME}:${this.PORT}`
       );
     });
   }
@@ -29,4 +29,4 @@ class App {
   }
 }
 
-new App({ APP_NAME, PORT }).getApp();
+new App({ APP_NAME, PORT, APP_HOST_NAME }).getApp();

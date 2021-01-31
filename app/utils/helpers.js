@@ -55,7 +55,10 @@ export const axiosWrapper = async ({ params, timeout }) => {
     response = await axios({ ...params, timeout });
   } catch (error) {
     logger.error(`Error in axiosWrapper -> ${safeStringify(params)}`, error);
-    response = error.response;
+    response = {
+      status: error && error.response ? error.response.status : 500,
+      message: error.message,
+    };
   }
   return response;
 };
@@ -68,3 +71,6 @@ export const deleteKeysInObjectExcept = (keys, tempObj) => {
   }
   return deepClone(obj);
 };
+
+// Returns current time in Seconds
+export const timeInSec = () => Date.now() / 1000;

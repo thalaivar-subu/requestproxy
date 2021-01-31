@@ -30,7 +30,6 @@ const Proxy = async (app) => {
 
       // Calling Input Endpoints
       const proxyResponse = await axiosWrapper({ params, timeout: 5000 });
-      logger.info({ responseData: proxyResponse.data });
 
       // Returning the Response
       res.status(proxyResponse.status);

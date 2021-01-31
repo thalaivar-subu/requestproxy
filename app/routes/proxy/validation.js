@@ -1,10 +1,11 @@
 import { GetValueFromRedis, SetValueToRedis } from "../../utils/redis";
 import safeStringify from "fast-safe-stringify";
 import logger from "../../utils/logger";
-import { parseJson } from "../../utils/helpers";
+import { parseJson, timeInSec } from "../../utils/helpers";
 import {
-  MAX_WINDOW_IN_MS,
+  MAX_WINDOW_IN_SECONDS,
   MAX_WINDOW_REQUEST_COUNT,
+  WINDOW_LOG_INTERVAL_IN_SECONDS,
 } from "../../lib/constants";
 import { check, body } from "express-validator";
 
@@ -20,50 +21,63 @@ const clientIdRateLimitValidation = async (clientId) => {
       safeStringify([
         {
           requestCount: 1,
-          requestTime: new Date(),
+          requestTime: timeInSec(),
         },
-      ])
+      ]),
+      MAX_WINDOW_IN_SECONDS
     );
-    logger.info({ setResponse });
+    logger.info("Inserted New Value in Redis", { setResponse });
   } else {
     const parsedRedisResponse = parseJson(redisResponse);
-    logger.info({ parsedRedisResponse });
-    const currentTime = new Date();
-    const windowStartTime = new Date(currentTime - MAX_WINDOW_IN_MS);
+    const currentTime = timeInSec();
+    const windowStartTime = currentTime - MAX_WINDOW_IN_SECONDS;
     const requestsWithinWindow = parsedRedisResponse.filter(
-      ({ requestTime }) => new Date(requestTime) >= windowStartTime
+      ({ requestTime }) => requestTime > windowStartTime
     );
-    logger.info({ requestsWithinWindow });
     const totalWindowRequestCount = requestsWithinWindow.reduce(
       (acc, { requestCount }) => acc + requestCount,
       0
     );
-    logger.info({ totalWindowRequestCount });
     if (totalWindowRequestCount >= MAX_WINDOW_REQUEST_COUNT) {
+      logger.info("Request Rejected -> ", {
+        totalWindowRequestCount,
+        MAX_WINDOW_REQUEST_COUNT,
+        requestsWithinWindow,
+      });
       return Promise.reject(
-        `You have exceeded ${MAX_WINDOW_REQUEST_COUNT} requests in ${
-          MAX_WINDOW_IN_MS / 60000
-        } min limit!`
+        `You have exceeded ${MAX_WINDOW_REQUEST_COUNT} requests in ${MAX_WINDOW_REQUEST_COUNT} min limit!`
       );
     } else {
-      const lastRequestLog = parsedRedisResponse.pop();
-      if (new Date(lastRequestLog.requestTime) >= windowStartTime) {
+      const lastRequestLog =
+        parsedRedisResponse[parsedRedisResponse.length - 1];
+      const intervalTime = currentTime - WINDOW_LOG_INTERVAL_IN_SECONDS;
+      if (lastRequestLog.requestTime > intervalTime) {
+        logger.info("Incrementing Last Request Log");
         lastRequestLog.requestCount += 1;
-        parsedRedisResponse.push(lastRequestLog);
+        parsedRedisResponse[parsedRedisResponse.length - 1] = lastRequestLog;
       } else {
         parsedRedisResponse.push({
           requestCount: 1,
-          requestTime: new Date(),
+          requestTime: timeInSec(),
         });
       }
-      logger.info({ parsedRedisResponse });
+      logger.info({
+        totalWindowRequestCount,
+        requestsWithinWindow,
+        lastRequestLog,
+      });
       const setResponse = await SetValueToRedis(
         clientId,
-        safeStringify(parsedRedisResponse)
+        safeStringify(parsedRedisResponse),
+        MAX_WINDOW_IN_SECONDS
       );
-      logger.info({ setResponse });
+      logger.info("Updated Existing Value in Redis -> ", {
+        setResponse,
+        setRequest: parsedRedisResponse,
+      });
     }
   }
+  return true;
 };
 
 // Input Validation /proxy API
