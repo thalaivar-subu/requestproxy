@@ -7,10 +7,9 @@
     "clean": "rm -rf build && mkdir build",
     "build-server": "./node_modules/@babel/cli/bin/babel.js -d ./build ./app -s",
     "build": "npm run clean && npm run build-server",
-    "build-test": "./node_modules/@babel/cli/bin/babel.js -d ./build ./app -s && npm run clean && npm run build-server",
     "start": "node ./build/index.js",
     "start-dev": "nodemon --exec ./node_modules/@babel/node/bin/babel-node.js  app/index.js",
-    "test": "start-server-and-test 'npm run build &&  NODE_ENV=test node ./build/index.js' 8081 'jest --coverage  --verbose'",
+    "test": "start-server-and-test 'NODE_ENV=test ./node_modules/@babel/node/bin/babel-node.js app/index.js' 8081 'jest --coverage  --verbose'",
     "lint": "npx eslint . --ext .js",
     "lint-fix": "npx eslint . --ext .js --fix",
     "prettify": "npx prettier . --ext.js --write"
@@ -41,6 +40,7 @@
     "start-server-and-test": "1.11.6"
   },
   "dependencies": {
+    "async-mutex": "0.2.6",
     "axios": "0.21.0",
     "bluebird": "3.7.2",
     "express": "4.17.1",

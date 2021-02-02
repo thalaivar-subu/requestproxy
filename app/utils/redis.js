@@ -50,4 +50,25 @@ const SetValueToRedis = async (key, data, expiration) => {
   return result;
 };
 
-export { InitRedis, GetValueFromRedis, SetValueToRedis };
+// Pass key - Deletes from Redis
+const DeleteValueFromRedis = async (key) => {
+  let result;
+  try {
+    result = await RedisClient.delAsync(key);
+  } catch (error) {
+    logger.error("Error while deleting value from redis -> ", error);
+  }
+  return result;
+};
+
+const CloseRedisConnection = async () => {
+  await RedisClient.quitAsync();
+};
+
+export {
+  InitRedis,
+  GetValueFromRedis,
+  SetValueToRedis,
+  DeleteValueFromRedis,
+  CloseRedisConnection,
+};
